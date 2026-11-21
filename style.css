@@ -1,0 +1,34 @@
+/* SkillSwap Web3 + Hybrid Production Edition — Clean White Theme */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+.nav-active {
+  color: #4f46e5;
+  background-color: #eef2ff;
+  font-weight: 700;
+}
+
+@keyframes scanline {
+  0% { top: 0%; }
+  50% { top: 96%; }
+  100% { top: 0%; }
+}
+
+.scan-bar {
+  animation: scanline 3s ease-in-out infinite;
+}
+
+/* Soulbound Certificate Border Pattern */
+.cert-frame {
+  background: radial-gradient(circle at top right, #eef2ff 0%, #ffffff 45%, #fefce8 100%);
+  border: 2px solid #c7d2fe;
+}

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillSwap — Live 1-on-1 Skill Training & Continuous Daily Streak</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-white text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchView('marketplace')">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+          S
+        </div>
+        <span class="text-xl font-extrabold tracking-tight text-slate-900">Skill<span class="text-indigo-600">Swap</span></span>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-1">
+        <button onclick="switchView('marketplace')" id="nav-marketplace" class="nav-btn nav-active px-3 py-2 rounded-lg text-sm font-medium transition">
+          1-on-1 Live Courses
+        </button>
+        <button onclick="switchView('learn')" id="nav-learn" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
+          <span>Live 1-on-1 Room</span>
+          <span class="px-1.5 py-0.5 text-[10px] font-bold uppercase bg-rose-100 text-rose-700 rounded">Live</span>
+        </button>
+        <button onclick="switchView('proctor')" id="nav-proctor" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
+          <span>Trainer AI Test</span>
+        </button>
+        <button onclick="switchView('assets')" id="nav-assets" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+          SBTs, Coins & Ledger
+        </button>
+        <button onclick="switchView('streak')" id="nav-streak" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
+          <span>Daily Streak</span>
+          <span class="px-1.5 py-0.5 text-[10px] font-bold uppercase bg-amber-100 text-amber-800 rounded">Live Date</span>
+        </button>
+      </nav>
+
+      <!-- Wallet, Coins & Auth Controls -->
+      <div class="flex items-center gap-2">
+        <button onclick="connectSmartWallet('social')" id="header-wallet-btn" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-indigo-50 border border-slate-200 text-slate-700 text-xs font-bold transition" title="ERC-4337 Account Abstraction Smart Wallet with Social Recovery & ₹0 Gas">
+          ⚡ Smart Wallet
+        </button>
+
+        <button onclick="switchView('assets')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-extrabold transition" title="Credits ONLY increase by +39 Coins per full 1 hour of Live 1-on-1 training">
+          <span>🪙 <span id="header-coins">0</span></span>
+        </button>
+
+        <button onclick="switchView('streak')" id="user-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 text-xs font-bold transition" title="Continuous Daily Login Streak — Resets if 1 day is missed">
+          <span>🔥 <span id="header-streak">1</span>/30d</span>
+        </button>
+
+        <button onclick="switchView('auth')" id="nav-auth" class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition shadow-sm">
+          Login / Sign Up
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Sub-Nav -->
+    <div class="flex lg:hidden overflow-x-auto border-t border-slate-100 px-4 py-2 gap-2 bg-white">
+      <button onclick="switchView('marketplace')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 whitespace-nowrap">1-on-1 Courses</button>
+      <button onclick="switchView('learn')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 whitespace-nowrap">Live 1-on-1 Room</button>
+      <button onclick="switchView('proctor')" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 whitespace-nowrap">Trainer Test</button>
+      <button onclick="switchView('assets')" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 whitespace-nowrap">SBTs & Coins</button>
+      <button onclick="switchView('streak')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-50 text-amber-800 whitespace-nowrap">Daily Streak</button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 bg-white">
+
+    <!-- ==================== VIEW 1: LIVE 1-ON-1 TRAINING MARKETPLACE ==================== -->
+    <section id="view-marketplace" class="view-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      
+      <!-- Hero Onboarding Promo Banner -->
+      <div class="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-white to-amber-50/60 p-6 sm:p-8 mb-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div class="max-w-2xl">
+          <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-white border border-rose-200 text-rose-700 text-xs font-bold mb-3 shadow-xs">
+            <span>🔴 100% LIVE 1-ON-1 MENTORSHIP</span>
+            <span>•</span>
+            <span class="text-indigo-700">⛽ ₹0 GAS SOULBOUND SBTs</span>
+            <span>•</span>
+            <span class="text-emerald-700">🔥 STRICT CONTINUOUS DATE STREAK</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
+            Learn Through <span class="text-indigo-600">Live 1-on-1 Training</span>, Mint Gasless SBTs & Earn 39 Coins/Hr.
+          </h1>
+          <p class="text-slate-600 text-base leading-relaxed">
+            No pre-recorded passive videos—every class is a <strong>private, interactive 1-on-1 live session</strong> with an AI-verified mentor. Complete your live session to mint a <strong>Mentor Co-Signed Soulbound Skill Badge</strong> + <strong>39 Coins per full live hour</strong>.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto shrink-0">
+          <button onclick="switchView('learn')" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+            <span>🎥 Enter Live 1-on-1 Classroom</span>
+          </button>
+          <button onclick="switchView('streak')" class="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-sm transition text-center">
+            🔥 Check Today’s Continuous Streak
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter & Category Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Live 1-on-1 Skill Training Sessions (Regulated INR vs. 50X Closed-Loop Coins)</h2>
+          <p class="text-sm text-slate-500">Every booking gives you a private <strong>1-on-1 WebRTC video + screen-share room</strong> with a verified mentor & <strong>₹0 Gas SBT</strong>.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openRateModal()" class="px-3.5 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition">
+            ✨ AI 1-on-1 Rate Estimator
+          </button>
+          <select id="categoryFilter" onchange="renderCourses()" class="px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="all">All Categories</option>
+            <option value="Tech & AI">Tech & AI</option>
+            <option value="Design">Design & UI</option>
+            <option value="Business">Business & Finance</option>
+            <option value="Language">Languages & Speaking</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Courses Grid -->
+      <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- ==================== VIEW 2: LIVE 1-ON-1 TRAINING CLASSROOM STUDIO ==================== -->
+    <section id="view-learn" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="inline-block px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold mb-2">
+            🔴 REAL-TIME 1-ON-1 MENTORSHIP • SCREEN SHARE • DUAL-SIGNED EIP-712 PROOF
+          </span>
+          <h1 class="text-3xl font-extrabold text-slate-900">Live 1-on-1 Training Classroom & Slot Scheduler</h1>
+          <p class="text-slate-600 mt-1">
+            Train directly <strong>1-on-1 with your verified mentor</strong> via live video, interactive screen sharing, and real-time Q&A. Completing <strong>100% of your live session</strong> mints your <strong>Mentor Co-Signed Skill SBT</strong> & <strong>+39 Coins/hr</strong>.
+          </p>
+        </div>
+        <button onclick="switchView('assets')" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition shrink-0">
+          🏅 View Minted SBTs Vault →
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Left: Live 1-on-1 WebRTC Video Call & Interactive Controls -->
+        <div class="lg:col-span-8 space-y-6">
+          <div class="glass-card rounded-2xl p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h2 id="player-course-title" class="text-xl font-extrabold text-slate-900">Python Automation & Web Scraping — Live 1-on-1 Session</h2>
+                <p id="player-course-meta" class="text-xs text-slate-500 mt-0.5">1-on-1 Mentor: Aarav S. • Scheduled: Today • Duration: 60 mins</p>
+              </div>
+              <span id="player-status-pill" class="px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-200">
+                1-on-1 Scheduled
+              </span>
+            </div>
+
+            <!-- Dual-Participant Live 1-on-1 Video Stage -->
+            <div class="relative w-full rounded-2xl bg-slate-950 text-white overflow-hidden border border-slate-800 p-4 mb-4">
+              <div class="flex items-center justify-between mb-3">
+                <span id="live-call-banner" class="px-3 py-1 rounded-full text-xs font-extrabold bg-slate-800 text-slate-200">
+                  ⚪ Ready to Join Private 1-on-1 Room
+                </span>
+                <span class="text-[11px] font-mono text-emerald-400">E2E Encrypted 1-on-1 WebRTC</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <!-- Mentor Live Feed -->
+                <div class="relative aspect-video rounded-xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center p-4 text-center">
+                  <div class="w-14 h-14 rounded-full bg-indigo-600 text-white font-extrabold text-xl flex items-center justify-center mb-2 shadow-md">
+                    M
+                  </div>
+                  <p id="live-mentor-name" class="text-sm font-extrabold text-white">Aarav S. (AI-Verified Mentor)</p>
+                  <p id="live-mentor-role" class="text-[11px] text-slate-400">Senior Automation Engineer • 1-on-1 Private Mentor</p>
+                  <span class="mt-2 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
+                    ● Mentor Online & Ready
+                  </span>
+                </div>
+
+                <!-- Learner Live Feed -->
+                <div class="relative aspect-video rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex flex-col items-center justify-center p-4 text-center">
+                  <video id="learner-live-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+                  <div id="learner-cam-placeholder" class="flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-full bg-emerald-600 text-white font-extrabold text-xl flex items-center justify-center mb-2 shadow-md">
+                      You
+                    </div>
+                    <p class="text-sm font-extrabold text-white">Aarav Sharma (1-on-1 Learner)</p>
+                    <p class="text-[11px] text-slate-400">Click "Join Live 1-on-1 Room" to enable camera & screen share</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Room Controls Bar -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-800">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="join-live-btn" onclick="joinLiveOneOnOneRoom()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition shadow-xs">
+                    🎥 Join Live 1-on-1 Room
+                  </button>
+                  <button id="ctrl-mic-btn" onclick="toggleLiveControl('mic')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold">
+                    🎙️ Mic On
+                  </button>
+                  <button id="ctrl-cam-btn" onclick="toggleLiveControl('cam')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold">
+                    📹 Camera On
+                  </button>
+                  <button id="ctrl-screen-btn" onclick="toggleLiveControl('screen')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold">
+                    🖥️ Share Screen
+                  </button>
+                </div>
+                <span class="text-[11px] text-slate-400">No group batch • 100% personal attention</span>
+              </div>
+
+              <!-- Live Session Progress Bar -->
+              <div class="mt-4 pt-3 border-t border-slate-800">
+                <div class="flex items-center justify-between text-xs font-bold mb-1.5">
+                  <span class="text-slate-300">Verified Live 1-on-1 Training Duration</span>
+                  <span id="player-progress-pct" class="text-emerald-400">0% (0/60 live mins)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div id="player-progress-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dual-Signed Live Attendance Oracle -->
+            <div class="mb-4 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+              <span id="oracle-voucher-hash" class="text-[11px] font-mono text-slate-600 truncate">
+                Dual-Signed 1-on-1 Attendance Proof: Awaiting live session heartbeat...
+              </span>
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 shrink-0">Mentor + Learner Co-Signed</span>
+            </div>
+
+            <!-- Target Skill SBT -->
+            <div class="p-4 rounded-xl bg-indigo-50/60 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+              <div id="player-target-badge" class="flex items-center gap-3"></div>
+              <span class="text-[11px] font-bold text-emerald-700 bg-white px-3 py-1 rounded-lg border border-emerald-200">
+                ⛽ Sponsored Gas: ₹0.00
+              </span>
+            </div>
+
+            <!-- Live Session Progression Controls -->
+            <div class="flex flex-wrap items-center gap-3">
+              <button onclick="advanceLiveSession(30)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition">
+                ⏱ Complete +30 Mins Live 1-on-1
+              </button>
+              <button onclick="completeLiveSession100()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold shadow-sm transition">
+                ✓ Finish Live 1-on-1 Class & Mint Co-Signed SBT
+              </button>
+            </div>
+          </div>
+
+          <!-- 1-on-1 Live Slot Scheduler Card -->
+          <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-sm font-extrabold text-slate-900 mb-1">📅 Schedule or Reschedule Your Private 1-on-1 Live Slot</h3>
+            <p class="text-xs text-slate-500 mb-4">Pick your preferred calendar date and IST time window for your live 1-on-1 mentorship session.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Session Date</label>
+                <input type="date" id="slot-date-picker" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">1-on-1 Time Slot (IST)</label>
+                <select id="slot-time-picker" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold">
+                  <option value="10:00 AM IST">10:00 AM – 11:00 AM IST</option>
+                  <option value="02:00 PM IST">02:00 PM – 03:00 PM IST</option>
+                  <option value="06:00 PM IST" selected>06:00 PM – 07:00 PM IST</option>
+                  <option value="08:30 PM IST">08:30 PM – 09:30 PM IST</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <button onclick="updateLiveSlotBooking()" class="w-full py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition">
+                  Confirm 1-on-1 Slot
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Booked 1-on-1 Sessions & Live Mentor Chat -->
+        <div class="lg:col-span-4 space-y-6">
+          <div class="glass-card rounded-2xl p-5">
+            <h3 class="text-sm font-extrabold text-slate-900 mb-1">My Booked 1-on-1 Live Classes</h3>
+            <p class="text-xs text-slate-500 mb-4">Select any booked 1-on-1 session to enter its live room.</p>
+            <div id="enrolled-courses-list" class="space-y-3"></div>
+            <button onclick="switchView('marketplace')" class="mt-4 w-full py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition">
+              + Book Another 1-on-1 Live Skill
+            </button>
+          </div>
+
+          <!-- Real-Time 1-on-1 Session Chat -->
+          <div class="glass-card rounded-2xl p-5 flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-extrabold text-slate-900">💬 Direct 1-on-1 Mentor Chat</h3>
+              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">Live</span>
+            </div>
+            <div id="live-chat-messages" class="space-y-2 h-48 overflow-y-auto p-2.5 rounded-xl bg-slate-50 border border-slate-200 mb-3">
+              <div class="text-[11px] text-slate-500 italic">Private 1-on-1 chat ready. Ask your mentor anything before or during the live session.</div>
+            </div>
+            <form onsubmit="sendLiveChatMessage(event)" class="flex gap-2">
+              <input type="text" id="live-chat-input" placeholder="Message your 1-on-1 mentor..." class="flex-1 px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <button type="submit" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: AI-PROCTORED TRAINER CERTIFICATION ==================== -->
+    <section id="view-proctor" class="view-section hidden max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="mb-8">
+        <span class="inline-block px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-2">
+          MANDATORY 1-ON-1 MENTOR VERIFICATION & PRIVACY-HASHED ATTESTATION
+        </span>
+        <h1 class="text-3xl font-extrabold text-slate-900">AI-Proctored Live 1-on-1 Trainer Certification</h1>
+        <p class="text-slate-600 mt-1">
+          Clear this live assessment to become an approved <strong>1-on-1 Live Mentor</strong> and mint an <strong>Official Trainer Soulbound Attestation (`ERC-5192`)</strong> with Keccak-256 privacy hashing.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                Live Vision & AI Guard
+              </span>
+              <span id="face-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Face Centered ✓
+              </span>
+            </div>
+
+            <div class="relative w-full aspect-video bg-slate-100 rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center">
+              <video id="webcam-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+              <div id="webcam-placeholder" class="text-center p-6">
+                <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2 text-xl">📷</div>
+                <p class="text-xs font-semibold text-slate-700">Camera Standby</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Click "Start Proctored Exam" to enable webcam or simulated AI vision feed.</p>
+              </div>
+              <div id="ai-overlay" class="hidden absolute inset-0 pointer-events-none">
+                <div class="scan-bar absolute left-0 right-0 h-0.5 bg-indigo-500/70 shadow-[0_0_8px_#6366f1]"></div>
+                <div class="absolute inset-8 border-2 border-dashed border-emerald-400/80 rounded-2xl flex items-end justify-center pb-2">
+                  <span class="bg-white/90 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
+                    GAZE LOCKED • NO EXTERNAL AI DETECTED
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100">
+              <div class="flex justify-between text-xs font-bold mb-1.5">
+                <span class="text-slate-700">Session Integrity Score</span>
+                <span id="integrity-score-text" class="text-emerald-600">100%</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div id="integrity-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 100%"></div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1.5">Score below 70% automatically disqualifies live 1-on-1 mentor certification.</p>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Test Anti-Cheat Triggers (Demo)</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="triggerViolation('Irrelevant Face Turn Detected (Looking Away > 3s)', 15)" class="px-2.5 py-2 rounded-lg border border-amber-200 bg-amber-50/60 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition">
+                  👀 Simulate Face Turn
+                </button>
+                <button onclick="triggerViolation('External AI Text Pattern / Paste Flagged', 25)" class="px-2.5 py-2 rounded-lg border border-rose-200 bg-rose-50/60 hover:bg-rose-100 text-rose-900 text-xs font-semibold transition">
+                  🤖 Simulate AI Paste
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Real-Time Proctoring Audit Log</h3>
+            <ul id="proctor-logs" class="space-y-1.5 text-xs text-slate-600 max-h-36 overflow-y-auto">
+              <li class="text-slate-400 italic">Waiting for exam initialization...</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7">
+          <div class="glass-card rounded-2xl p-6 sm:p-8">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-slate-100 mb-6">
+              <div>
+                <label class="text-[11px] font-bold text-indigo-600 uppercase block mb-1">Select Skill to Teach Live 1-on-1</label>
+                <select id="teacher-skill-select" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-900">
+                  <option value="Python & API Automation">Python & API Automation</option>
+                  <option value="Figma Auto-Layout & UI Systems">Figma Auto-Layout & UI Systems</option>
+                  <option value="SQL & Data Analytics">SQL & Data Analytics</option>
+                  <option value="Financial Modeling in Excel">Financial Modeling in Excel</option>
+                </select>
+              </div>
+              <button id="start-exam-btn" onclick="startProctoredExam()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition">
+                Start Proctored Exam
+              </button>
+            </div>
+
+            <div id="exam-questions" class="space-y-6 opacity-50 pointer-events-none transition">
+              <div>
+                <p class="text-sm font-bold text-slate-800 mb-2">1. Which HTTP status code indicates a resource was successfully created after a POST request?</p>
+                <div class="space-y-2 text-sm">
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="radio" name="q1" value="200" class="text-indigo-600"> <span>200 OK</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="radio" name="q1" value="201" class="text-indigo-600"> <span>201 Created</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-sm font-bold text-slate-800 mb-2">2. What is the primary advantage of live 1-on-1 training over passive recorded videos?</p>
+                <div class="space-y-2 text-sm">
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="radio" name="q2" value="focused" class="text-indigo-600"> <span>Real-time screen sharing, instant doubt resolution, and personalized pacing</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="radio" name="q2" value="theory" class="text-indigo-600"> <span>One-way pre-recorded slides with no feedback</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <p class="text-sm font-bold text-slate-800">3. How will you structure your live 1-on-1 hands-on session with a learner?</p>
+                  <span class="text-[11px] font-semibold text-rose-600">Paste Disabled • AI Detection On</span>
+                </div>
+                <textarea id="q3-input" rows="3" onpaste="handlePasteAttempt(event)" placeholder="Type naturally without pasting AI-generated text..." class="w-full p-3 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              </div>
+
+              <div class="pt-2 flex items-center justify-between">
+                <span class="text-xs text-slate-500">Switching browser tabs will automatically log a violation.</span>
+                <button onclick="submitTeacherExam()" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition">
+                  Submit & Mint Mentor SBT
+                </button>
+              </div>
+            </div>
+
+            <div id="exam-result" class="hidden mt-6 p-5 rounded-xl border"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: MY SBTs, COINS & REGULATED INR LEDGER ==================== -->
+    <section id="view-assets" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <span class="inline-block px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold mb-2">
+            SMART WALLET • MENTOR CO-SIGNED SBTs (ERC-5192) • CLOSED-LOOP COINS • INR LEDGER
+          </span>
+          <h1 class="text-3xl font-extrabold text-slate-900">Soulbound Skill Badges, Coins & Booking History</h1>
+          <p class="text-slate-600 mt-1">
+            All badges use <strong>₹0 Gas Paymaster</strong> and store <strong>only privacy-preserving hashes</strong> on-chain. Credits increase strictly by <strong>+39 Coins per full 1-hour Live 1-on-1 session</strong>.
+          </p>
+        </div>
+        <button onclick="switchView('learn')" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-sm transition shrink-0">
+          🎥 Join Live 1-on-1 Class to Mint SBT
+        </button>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-indigo-50/50 via-white to-emerald-50/40">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700">Account Abstraction Smart Wallet</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">⛽ ₹0 Gas Sponsored</span>
+          </div>
+          <p id="web3-wallet-address" class="text-sm font-mono font-extrabold text-slate-900">Not Activated (Click to Provision Smart Wallet)</p>
+          <p id="web3-wallet-type" class="text-xs text-slate-500 mt-0.5">ERC-4337 Smart Wallet (Email/Google Social Recovery — Zero Seed Phrase Risk)</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="connectSmartWallet('social')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition">
+            🛡️ Activate Email Smart Wallet
+          </button>
+          <button onclick="connectSmartWallet('metamask')" class="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition">
+            🦊 Connect MetaMask
+          </button>
+          <button onclick="triggerSocialRecoveryDemo()" class="px-4 py-2 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition">
+            🔑 Test Social Recovery
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-10">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900">Soulbound Skill Badges & Milestones (Non-Transferable ERC-5192)</h2>
+            <p class="text-xs text-slate-500">Mentor co-signed on-chain credentials with Keccak-256 privacy hashes (zero personal PII exposed publicly).</p>
+          </div>
+        </div>
+        <div id="badges-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
+        <div class="lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col justify-between bg-gradient-to-br from-amber-50/60 via-white to-indigo-50/40">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Closed-Loop Utility Coins (Zero VDA Tax Friction)</span>
+            <div class="flex items-baseline gap-2 mt-2">
+              <span class="text-4xl font-extrabold text-slate-900">🪙 <span id="wallet-coins-display">0</span></span>
+              <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">+39 Coins / Full 1 Hr</span>
+            </div>
+            <p class="text-xs text-slate-600 mt-2">
+              Completed Live 1-on-1 Hours: <strong><span id="hours-watched-display">0</span> Full Hr(s)</strong>. Current Hour Progress: <strong id="partial-mins-display">0 / 60 mins</strong>
+            </p>
+            <div class="w-full h-2 bg-slate-200/80 rounded-full mt-2 overflow-hidden">
+              <div id="partial-mins-bar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="mt-5 pt-4 border-t border-slate-200/70 flex items-center justify-between text-xs">
+            <span class="text-slate-500">1 Full Live Hr = <strong>39 Coins</strong> • Class = <strong>50X INR</strong></span>
+            <button onclick="switchView('marketplace')" class="font-bold text-indigo-600 hover:underline">Book 1-on-1 Classes →</button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 glass-card rounded-2xl p-6">
+          <h2 class="text-base font-extrabold text-slate-900 mb-1">Redeem Closed-Loop Credit Coins</h2>
+          <p class="text-xs text-slate-500 mb-4">Non-tradable utility rewards earned exclusively via verified 1-hour Live 1-on-1 sessions (+39 Coins/hr).</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col justify-between">
+              <div>
+                <span class="text-lg">⚡</span>
+                <h3 class="text-xs font-extrabold text-slate-900 mt-1">30-Min Extra 1-on-1 Code Review</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">2 Live Hours reward</p>
+              </div>
+              <button onclick="redeemRewardItem('30-Min Extra 1-on-1 Code Review', 78)" class="mt-3 w-full py-2 rounded-lg bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+                Redeem 🪙 78
+              </button>
+            </div>
+
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col justify-between">
+              <div>
+                <span class="text-lg">📜</span>
+                <h3 class="text-xs font-extrabold text-slate-900 mt-1">LinkedIn Verified SBT Frame</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">5 Live Hours reward</p>
+              </div>
+              <button onclick="redeemRewardItem('LinkedIn Verified SBT Frame', 195)" class="mt-3 w-full py-2 rounded-lg bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+                Redeem 🪙 195
+              </button>
+            </div>
+
+            <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 flex flex-col justify-between">
+              <div>
+                <span class="text-lg">🎓</span>
+                <h3 class="text-xs font-extrabold text-slate-900 mt-1">₹199 Live 1-on-1 Class (50X)</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">Spoken English + Skill SBT</p>
+              </div>
+              <button onclick="redeemCourseWithCoins(4)" class="mt-3 w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition">
+                Redeem 🪙 9,950
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-10">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900">Hybrid Live 1-on-1 Booking & Gasless Mint Ledger</h2>
+            <p class="text-xs text-slate-500">Regulated INR/UPI escrow bookings paired with ₹0 Base L2 Paymaster credential minting.</p>
+          </div>
+          <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            🇮🇳 RBI & DPDP Compliant
+          </span>
+        </div>
+        <div class="glass-card rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider text-slate-500">
+                  <th class="py-3 px-4">Transaction ID</th>
+                  <th class="py-3 px-4">Live 1-on-1 Course</th>
+                  <th class="py-3 px-4">Payment Rail</th>
+                  <th class="py-3 px-4">INR Paid</th>
+                  <th class="py-3 px-4">On-Chain Gas</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4">Date</th>
+                </tr>
+              </thead>
+              <tbody id="payment-ledger-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900">Privacy-Hashed Certificates Vault (Live 1-on-1 Learner & Mentor SBTs)</h2>
+            <p class="text-xs text-slate-500">Only cryptographic Keccak-256 commitments are anchored on-chain; share ZK verification proofs selectively.</p>
+          </div>
+          <button onclick="switchView('proctor')" class="px-3.5 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition">
+            + Become a Live 1-on-1 Mentor
+          </button>
+        </div>
+        <div id="certificates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: CONTINUOUS DAILY DATE STREAK & 10-DAY TRIAL ==================== -->
+    <section id="view-streak" class="view-section hidden max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div>
+          <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold mb-2">
+            <span>📅 TODAY'S DATE: <strong id="today-date-display">21 Nov 2026</strong></span>
+            <span>•</span>
+            <span>STRICT CONTINUOUS LOGIN RULE</span>
+          </div>
+          <h1 class="text-3xl font-extrabold text-slate-900">Continuous Daily Login Streak & 10-Day Free Trial</h1>
+          <p class="text-slate-600 mt-1">
+            Logging in on the <strong>current date</strong> awards your streak for that exact date. <strong>If you stop logging in for even 1 day, your streak immediately resets to 0!</strong>
+          </p>
+        </div>
+        <button onclick="checkInToday()" id="checkin-btn" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm transition shrink-0">
+          🔥 Claim Today’s Date Streak
+        </button>
+      </div>
+
+      <!-- Alert Banner when User Missed 1+ Days -->
+      <div id="streak-broken-banner" class="hidden mb-6 p-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-900 flex items-start gap-3">
+        <span class="text-xl">💔</span>
+        <div>
+          <h3 class="text-sm font-extrabold">Continuous Streak Broken & Reset!</h3>
+          <p id="streak-broken-text" class="text-xs mt-0.5">You missed 1 day of continuous login, so your streak reset and restarted on today's date.</p>
+        </div>
+      </div>
+
+      <!-- Proof-of-Personhood Anti-Sybil Card -->
+      <div class="glass-card rounded-2xl p-5 mb-8 border-indigo-200 bg-indigo-50/40">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900">🛡️ Sybil-Resistant Proof-of-Personhood Gate (1 Human = 1 Trial & Streak)</h3>
+            <p class="text-xs text-slate-600">Verify with your institutional/student email or mobile OTP to lock multi-account bot farming.</p>
+          </div>
+          <span id="pop-status-badge" class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-800 border border-amber-200">
+            ⚠ Unverified (Sybil Guard Active)
+          </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input type="text" id="pop-id-input" value="aarav.sharma@iitb.ac.in" placeholder="College Email (.ac.in/.edu) or Phone" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-medium" />
+          <input type="text" id="pop-otp-input" value="202609" placeholder="6-Digit OTP" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono" />
+          <button onclick="verifyProofOfPersonhood()" class="py-2 px-4 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+            ✓ Verify Unique Personhood
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Current Date Status</p>
+          <p id="last-login-date-display" class="text-lg font-extrabold text-indigo-600 mt-1">Awarded on 21 Nov 2026 ✓</p>
+          <p class="text-xs text-slate-500 mt-1">Must log in tomorrow without missing 1 day</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Continuous Streak Count</p>
+          <p class="text-3xl font-extrabold text-slate-900 mt-1"><span id="streak-count-display">1</span> / 30 Days</p>
+          <div class="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+            <div id="streak-progress-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 3.33%"></div>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Free Live 1-on-1 Voucher</p>
+          <p id="voucher-status" class="text-xl font-extrabold text-amber-600 mt-1">🔒 Locked (29 days left)</p>
+          <p class="text-xs text-slate-500 mt-1">30 Continuous Days = 1 Complete Live 1-on-1 Class Free</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
+          <h2 class="text-lg font-bold text-slate-900">Your Real-Calendar 30-Day Continuous Streak Roadmap</h2>
+          <div class="flex flex-wrap items-center gap-4 text-xs font-semibold">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-indigo-600 inline-block"></span> Today's Awarded Date</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Continuous Logged Day</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-100 border border-amber-400 inline-block"></span> Day 30: 1 Free Live Class</span>
+          </div>
+        </div>
+
+        <div id="streak-grid" class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-3"></div>
+
+        <!-- Interactive Continuity & 1-Day-Miss Reset Simulator -->
+        <div class="mt-6 pt-5 border-t border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <p class="text-xs text-slate-500">
+            Test the real-calendar continuity engine (continuous daily login vs. stopping for 1 day):
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="simulateNextDayLogin(false)" class="px-3.5 py-2 rounded-lg bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition">
+              ▶ Demo: Log In Continuously (+1 Day)
+            </button>
+            <button onclick="simulateNextDayLogin(true)" class="px-3.5 py-2 rounded-lg bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-800 text-xs font-bold transition">
+              💔 Demo: Stop 1 Day (Streak Resets!)
+            </button>
+            <button onclick="simulateFullMonthStreak()" class="px-3.5 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold transition">
+              ⚡ Demo: Complete 30 Continuous Days
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 7: LOGIN & SIGN UP ==================== -->
+    <section id="view-auth" class="view-section hidden max-w-md mx-auto px-4 py-12">
+      <div class="glass-card rounded-2xl p-8">
+        <div class="text-center mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-extrabold text-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+            S
+          </div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Welcome to SkillSwap Live</h1>
+          <p class="text-xs text-slate-500 mt-1">Logging in automatically awards your continuous streak on <strong>today's exact calendar date</strong></p>
+        </div>
+
+        <div class="grid grid-cols-2 p-1 rounded-xl bg-slate-100 mb-6">
+          <button id="tab-signup" onclick="toggleAuthTab('signup')" class="py-2 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition">
+            Sign Up (Smart Wallet)
+          </button>
+          <button id="tab-login" onclick="toggleAuthTab('login')" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">
+            Log In
+          </button>
+        </div>
+
+        <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+          <div id="name-field">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Full Name (Encrypted Off-Chain • Hashed On-Chain)</label>
+            <input type="text" id="auth-name" value="Aarav Sharma" placeholder="Aarav Sharma" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Guardian Email (For Social Recovery)</label>
+            <input type="email" id="auth-email" required placeholder="aarav@example.in" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+            <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <div id="role-field">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Primary Goal</label>
+            <select class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option>Join Live 1-on-1 Classes & Mint Gasless SBTs</option>
+              <option>Teach Live 1-on-1 & Mint Mentor SBT Attestation</option>
+              <option>Both Learn & Teach Live 1-on-1</option>
+            </select>
+          </div>
+
+          <button type="submit" id="auth-submit-btn" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm transition">
+            Create Account + Award Today’s Streak
+          </button>
+        </form>
+
+        <div class="mt-5 pt-4 border-t border-slate-100 text-center">
+          <button onclick="quickDemoLogin()" class="text-xs font-bold text-indigo-600 hover:underline">
+            ⚡ 1-Click Login & Award Today’s Continuous Streak
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== SKILL SBT CELEBRATION MODAL ==================== -->
+  <div id="badge-celebration-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-indigo-200 max-w-md w-full p-7 shadow-2xl text-center relative">
+      <button onclick="closeBadgeCelebrationModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      <div class="inline-block px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-extrabold uppercase tracking-wider mb-3">
+        🎉 Live 1-on-1 Completed • Gasless SBT Minted!
+      </div>
+      <div id="celebrate-badge-icon" class="w-20 h-20 rounded-2xl bg-indigo-50 border border-indigo-200 text-4xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+        🐍
+      </div>
+      <h3 class="text-xl font-extrabold text-slate-900" id="celebrate-badge-title">Python Automation Specialist</h3>
+      <p class="text-xs text-slate-500 mt-1">
+        Mentor Co-Signed Soulbound Token (`ERC-5192`) minted for <strong id="celebrate-skill-name" class="text-slate-800">Python Automation & Web Scraping</strong>
+      </p>
+      <p id="celebrate-zk-hash" class="mt-2 text-[11px] font-mono text-indigo-700 bg-indigo-50 border border-indigo-100 py-1.5 px-3 rounded-lg">
+        Dual-Signed 1-on-1 Proof: 0x9a4f... • Gas Paid: ₹0
+      </p>
+      <p id="celebrate-coins-note" class="mt-2.5 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 py-2 px-3 rounded-xl">
+        +39 Utility Coins (39/full live hr) & Mentor Co-Signed Certificate added!
+      </p>
+      <div class="mt-5 grid grid-cols-2 gap-2.5">
+        <button onclick="closeBadgeCelebrationModal()" class="py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">
+          Keep Learning
+        </button>
+        <button onclick="closeBadgeCelebrationModal(); switchView('assets');" class="py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
+          View in SBTs Vault →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PAYMENT GATEWAY CHECKOUT MODAL ==================== -->
+  <div id="payment-gateway-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full overflow-hidden shadow-2xl">
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-extrabold text-sm">S</div>
+          <div>
+            <h3 class="text-sm font-extrabold">Book Live 1-on-1 Training (RBI & Escrow Protected)</h3>
+            <p class="text-[11px] text-slate-300">Order ID: <span id="pg-order-id" class="font-mono text-indigo-300">order_SS100001</span></p>
+          </div>
+        </div>
+        <button onclick="closePaymentModal()" class="text-slate-300 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <div class="p-6">
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-5">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+            <span>Selected Live 1-on-1 Mentorship</span>
+            <span class="font-bold text-emerald-700">Live 1-on-1 + ₹0 Gas SBT</span>
+          </div>
+          <h4 id="pg-course-title" class="text-base font-extrabold text-slate-900 mb-3">Python Automation & Web Scraping</h4>
+          <div class="space-y-1 text-xs border-t border-slate-200 pt-2.5">
+            <div class="flex justify-between text-slate-600">
+              <span>AI-Calibrated 1-on-1 Session Fee</span>
+              <span id="pg-base-price" class="font-semibold">₹299</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>GST (18%)</span>
+              <span id="pg-gst-price" class="font-semibold">₹54</span>
+            </div>
+            <div class="flex justify-between text-sm font-extrabold text-slate-900 pt-1.5 border-t border-slate-200">
+              <span>Total Payable (INR)</span>
+              <span id="pg-total-price" class="text-indigo-600">₹353</span>
+            </div>
+          </div>
+        </div>
+
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Choose Regulated INR Payment Method</label>
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <button id="pg-tab-upi" onclick="selectPaymentMethod('upi')" class="py-2.5 px-3 rounded-xl border-2 border-indigo-600 bg-indigo-50/70 text-indigo-900 text-xs font-extrabold transition">
+            📱 UPI / QR
+          </button>
+          <button id="pg-tab-card" onclick="selectPaymentMethod('card')" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold transition">
+            💳 Debit/Credit
+          </button>
+          <button id="pg-tab-netbanking" onclick="selectPaymentMethod('netbanking')" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold transition">
+            🏦 NetBanking
+          </button>
+        </div>
+
+        <div id="pg-panel-upi" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Enter UPI ID (GPay, PhonePe, Paytm, BHIM)</label>
+            <input type="text" id="pg-upi-id" value="aarav@okicici" placeholder="username@upi" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-slate-500">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">Escrow Safe</span>
+            <span>Released to mentor upon live 1-on-1 attendance</span>
+          </div>
+        </div>
+
+        <div id="pg-panel-card" class="hidden space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Card Number</label>
+            <input type="text" id="pg-card-num" value="4532 8910 2345 4242" placeholder="4532 •••• •••• 4242" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Expiry (MM/YY)</label>
+              <input type="text" value="08/29" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">CVV</label>
+              <input type="password" value="123" maxlength="3" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-sm" />
+            </div>
+          </div>
+        </div>
+
+        <div id="pg-panel-netbanking" class="hidden space-y-3">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Select Indian Bank</label>
+          <select id="pg-bank-select" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium">
+            <option value="HDFC Bank">HDFC Bank Retail</option>
+            <option value="ICICI Bank">ICICI Bank NetBanking</option>
+            <option value="State Bank of India">State Bank of India (SBI)</option>
+            <option value="Axis Bank">Axis Bank</option>
+          </select>
+        </div>
+
+        <div id="pg-status-banner" class="hidden"></div>
+
+        <div class="mt-6 space-y-2.5">
+          <button id="pg-submit-btn" onclick="processGatewayPayment()" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-md transition">
+            Pay <span id="pg-pay-btn-amount">₹353</span> & Book 1-on-1
+          </button>
+          <button onclick="launchRazorpayStandardSDK()" class="w-full py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold transition">
+            ⚡ Open Official Razorpay Standard Checkout Modal
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== AI RATE CALCULATOR MODAL ==================== -->
+  <div id="rate-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 shadow-xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-lg font-extrabold text-slate-900">🤖 AI Live 1-on-1 Rate Estimator</h3>
+        <button onclick="closeRateModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">
+        Estimate fair <strong>Live 1-on-1 Mentorship</strong> pricing in INR vs. closed-loop Credit Coins (<strong>50X INR price</strong>, earned at <strong>39 Coins per full 1-hr live session</strong>).
+      </p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Skill Topic</label>
+          <input type="text" id="calc-skill" value="React Hooks & State" oninput="calculateAiRate()" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Skill Complexity Level</label>
+          <select id="calc-level" onchange="calculateAiRate()" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
+            <option value="1">Beginner Fundamentals (Base Rate)</option>
+            <option value="1.35" selected>Intermediate Practical (1.35x)</option>
+            <option value="1.75">Advanced Specialized (1.75x)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Live 1-on-1 Hours: <span id="calc-hours-val" class="text-indigo-600">2 hrs</span></label>
+          <input type="range" id="calc-hours" min="1" max="5" value="2" oninput="calculateAiRate()" class="w-full accent-indigo-600" />
+        </div>
+
+        <div class="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-indigo-900">1-on-1 Cash Price vs. 50X Coins</p>
+            <p class="text-[11px] text-indigo-700">₹0 Gas SBT + 39 Coins per full 1-hr live session</p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-extrabold text-indigo-600" id="calc-price">₹349</div>
+            <div class="text-xs font-bold text-amber-700" id="calc-coins-price">or 🪙 17,450 Coins (50X)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2">
+        <button onclick="closeRateModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700">Close</button>
+        <button onclick="closeRateModal(); switchView('marketplace');" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold">Browse 1-on-1 Courses</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CERTIFICATE ZK PROOF MODAL ==================== -->
+  <div id="cert-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="cert-frame rounded-2xl max-w-lg w-full p-8 shadow-2xl text-center relative">
+      <button onclick="closeCertificateModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-extrabold text-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+        S
+      </div>
+      <p id="modal-cert-type" class="text-xs font-extrabold uppercase tracking-widest text-indigo-600">Live 1-on-1 Soulbound Certificate (ERC-5192)</p>
+      <h3 class="text-2xl font-extrabold text-slate-900 mt-2" id="modal-cert-skill">Skill Title</h3>
+      <p class="text-xs text-slate-500 mt-3">Selective ZK Verification Proof for</p>
+      <p class="text-xl font-extrabold text-slate-900 mt-1 border-b border-slate-300 inline-block px-6 pb-1" id="modal-cert-holder">Aarav Sharma</p>
+      <div class="mt-4 p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] font-mono text-indigo-900 break-all">
+        On-Chain Keccak-256 Commitment: <strong id="modal-cert-zk">0x8f3a91c4d72e50b6</strong>
+      </div>
+      <div class="mt-3 flex items-center justify-between text-[11px] text-slate-500 bg-white/80 p-3 rounded-xl border border-slate-200">
+        <span>Credential ID: <strong id="modal-cert-id" class="text-slate-800">CERT-1ON1</strong></span>
+        <span>Issued: <strong id="modal-cert-date" class="text-slate-800">21 Nov 2026</strong></span>
+      </div>
+      <button onclick="closeCertificateModal(); showToast('🔗 Selective ZK Verification Link copied (Zero PII leaked on-chain)!');" class="mt-5 w-full py-2.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition">
+        Copy Selective ZK Recruiter Link
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-lg transition"></div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <p>© 2026 SkillSwap India — Live 1-on-1 Skill Training + Continuous Daily Streak Edition.</p>
+      <div class="flex flex-wrap gap-4">
+        <span>100% Live 1-on-1 Mentorship</span>
+        <span>•</span>
+        <span>Continuous Date Streak + ₹0 Gas Paymaster</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
